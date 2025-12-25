@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kubernetes Module: RBAC & Security - VENKATESAN SM</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #1e3a8a;
+            --accent: #3b82f6;
+            --bg-light: #f8fafc;
+            --code-bg: #0f172a;
+            --border: #e2e8f0;
+            --yaml-key: #38bdf8;
+            --yaml-val: #fbbf24;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #ffffff;
+            color: #1e293b;
+            line-height: 1.6;
+            padding: 40px 20px;
+        }
+
+        .container { max-width: 1100px; margin: 0 auto; }
+
+        .module-header {
+            border-bottom: 2px solid var(--border);
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+        }
+        .breadcrumb { font-size: 0.85rem; color: var(--accent); font-weight: 600; text-transform: uppercase; margin-bottom: 10px; }
+        h1 { font-size: 2.5rem; color: var(--primary); font-weight: 800; }
+
+        h2 { color: var(--primary); font-size: 1.5rem; margin: 40px 0 20px; display: flex; align-items: center; gap: 10px; }
+        h2::before { content: ""; width: 4px; height: 24px; background: var(--accent); display: inline-block; border-radius: 2px; }
+
+        .concept-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .concept-card {
+            background: var(--bg-light);
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+        }
+        .concept-card h4 { color: var(--primary); margin-bottom: 8px; }
+
+        /* Tables */
+        .rbac-table-container { overflow-x: auto; margin: 20px 0 40px; border-radius: 12px; border: 1px solid var(--border); }
+        table { width: 100%; border-collapse: collapse; font-size: 0.85rem; background: white; }
+        th { background: var(--bg-light); color: var(--primary); font-weight: 700; text-align: left; padding: 12px 15px; border-bottom: 2px solid var(--border); }
+        td { padding: 12px 15px; border-bottom: 1px solid var(--border); vertical-align: top; }
+        tr:last-child td { border-bottom: none; }
+        .api-tag { font-family: 'Fira Code', monospace; color: var(--accent); font-weight: 600; }
+
+        /* Technical Code Blocks */
+        .technical-block {
+            background: var(--code-bg);
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+        .block-label { color: #94a3b8; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; margin-bottom: 15px; display: block; border-bottom: 1px solid #1e293b; padding-bottom: 8px; }
+        
+        pre {
+            font-family: 'Fira Code', monospace;
+            font-size: 0.85rem;
+            color: #e2e8f0;
+            overflow-x: auto;
+            white-space: pre;
+        }
+        .comment { color: #64748b; font-style: italic; }
+        .key { color: var(--yaml-key); font-weight: 500; }
+        .val { color: var(--yaml-val); }
+
+        .note {
+            background: #eff6ff;
+            border-left: 4px solid var(--accent);
+            padding: 20px;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header class="module-header">
+            <div class="breadcrumb">Module 05: Identity & Access Management</div>
+            <h1>RBAC & ServiceAccounts</h1>
+            <p style="margin-top: 10px; color: #64748b;">Managing permissions via Roles, ClusterRoles, and Pod Identities.</p>
+        </header>
+
+        <section class="concept-grid">
+            <div class="concept-card">
+                <h4>Role</h4>
+                <p>Namespace-scoped permissions. Limits access to a specific namespace (e.g., 'dev' or 'prod').</p>
+            </div>
+            <div class="concept-card">
+                <h4>ClusterRole</h4>
+                <p>Cluster-wide permissions. Manages non-namespaced resources (Nodes, PVs) or resources across all namespaces.</p>
+            </div>
+        </section>
+
+        <section>
+            <h2>1. Role (Namespace-Scoped)</h2>
+            <div class="technical-block">
+                <span class="block-label">Example Role YAML</span>
+                <pre>
+<span class="key">apiVersion</span>: rbac.authorization.k8s.io/v1
+<span class="key">kind</span>: Role
+<span class="key">metadata</span>:
+  <span class="key">namespace</span>: <span class="val">dev</span> <span class="comment"># Scope is restricted to the 'dev' namespace</span>
+  <span class="key">name</span>: <span class="val">dev-admin</span>
+<span class="key">rules</span>:
+- <span class="key">apiGroups</span>: [<span class="val">""</span>] <span class="comment"># Core API Group</span>
+  <span class="key">resources</span>: [<span class="val">"pods", "services", "configmaps", "secrets"</span>]
+  <span class="key">verbs</span>: [<span class="val">"get", "list", "create", "update", "delete"</span>]
+- <span class="key">apiGroups</span>: [<span class="val">"apps"</span>]
+  <span class="key">resources</span>: [<span class="val">"deployments", "statefulsets"</span>]
+  <span class="key">verbs</span>: [<span class="val">"get", "list", "create", "update", "delete"</span>]</pre>
+            </div>
+
+            <div class="rbac-table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>API Group</th>
+                            <th>Namespaced Resource(s)</th>
+                            <th>Typical Verbs</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td><span class="api-tag">"" (core)</span></td><td>pods, services, endpoints, configmaps, secrets, persistentvolumeclaims, events, replicationcontrollers, serviceaccounts</td><td>get, list, watch, create, update, patch, delete</td></tr>
+                        <tr><td><span class="api-tag">apps</span></td><td>deployments, daemonsets, statefulsets, replicasets</td><td>get, list, watch, create, update, patch, delete</td></tr>
+                        <tr><td><span class="api-tag">batch</span></td><td>jobs, cronjobs</td><td>get, list, watch, create, update, patch, delete</td></tr>
+                        <tr><td><span class="api-tag">networking.k8s.io</span></td><td>ingresses, networkpolicies</td><td>get, list, watch, create, update, patch, delete</td></tr>
+                        <tr><td><span class="api-tag">rbac.authorization.k8s.io</span></td><td>roles, rolebindings</td><td>get, list, watch, create, update, patch, delete</td></tr>
+                        <tr><td><span class="api-tag">storage.k8s.io</span></td><td>volumeattachments</td><td>get, list, watch, create, update, patch, delete</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        
+
+        <section>
+            <h2>2. ClusterRole (Global Scope)</h2>
+            <div class="technical-block">
+                <span class="block-label">Example ClusterRole YAML</span>
+                <pre>
+<span class="key">apiVersion</span>: rbac.authorization.k8s.io/v1
+<span class="key">kind</span>: ClusterRole
+<span class="key">metadata</span>:
+  <span class="key">name</span>: <span class="val">cluster-pod-reader</span>
+<span class="key">rules</span>:
+- <span class="key">apiGroups</span>: [<span class="val">""</span>]
+  <span class="key">resources</span>: [<span class="val">"pods"</span>]
+  <span class="key">verbs</span>: [<span class="val">"get", "list", "watch"</span>]</pre>
+            </div>
+
+            <div class="rbac-table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>API Group</th>
+                            <th>Cluster-Scoped / Global Resources</th>
+                            <th>Typical Verbs</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td><span class="api-tag">"" (core)</span></td><td>nodes, namespaces, persistentvolumes, plus all namespaced resources</td><td>get, list, watch, create, update, patch, delete</td></tr>
+                        <tr><td><span class="api-tag">rbac.authorization.k8s.io</span></td><td>clusterroles, clusterrolebindings, roles, rolebindings</td><td>get, list, watch, create, update, patch, delete</td></tr>
+                        <tr><td><span class="api-tag">apiextensions.k8s.io</span></td><td>customresourcedefinitions (CRDs)</td><td>get, list, watch, create, update, patch, delete</td></tr>
+                        <tr><td><span class="api-tag">storage.k8s.io</span></td><td>storageclasses, volumeattachments</td><td>get, list, watch, create, update, patch, delete</td></tr>
+                        <tr><td><span class="api-tag">admissionregistration.k8s.io</span></td><td>mutatingwebhookconfigurations, validatingwebhookconfigurations</td><td>get, list, watch, create, update, patch, delete</td></tr>
+                        <tr><td><span class="api-tag">"" (core)</span></td><td>/healthz, /metrics, /version (Non-resource URLs)</td><td>get (via ClusterRole only)</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section>
+            <h2>3. ServiceAccount</h2>
+            <p>ServiceAccounts provide an identity for processes that run in your Pods.</p>
+            <div class="technical-block">
+                <span class="block-label">ServiceAccount Configuration</span>
+                <pre>
+<span class="key">apiVersion</span>: v1
+<span class="key">kind</span>: ServiceAccount
+<span class="key">metadata</span>:
+  <span class="key">name</span>: <span class="val">my-service-account</span>
+  <span class="key">labels</span>:
+    <span class="key">app</span>: <span class="val">myapplication</span>
+<span class="key">automountServiceAccountToken</span>: <span class="val">true</span> <span class="comment"># Automatically mount API token in pods</span>
+<span class="key">imagePullSecrets</span>:
+  - <span class="key">name</span>: <span class="val">my-registry-secret</span> <span class="comment"># Secret for private registry access</span>
+<span class="key">secrets</span>:
+  - <span class="key">name</span>: <span class="val">my-additional-secret</span> <span class="comment"># Extra secrets for pods using this account</span></pre>
+            </div>
+        </section>
+
+        <div class="note">
+            <strong>Key Discovery Tip:</strong><br>
+            • Use <code>kubectl api-resources -o wide</code> to see your cluster’s full list of resources and their API groups.<br>
+            • Custom resources from tools like Helm or Operators (e.g., <code>cert-manager.io</code>) will appear in their own unique API groups.
+        </div>
+    </div>
+
+</body>
+</html>

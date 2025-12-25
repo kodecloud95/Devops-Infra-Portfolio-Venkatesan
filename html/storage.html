@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kubernetes Module: Storage Architecture - VENKATESAN SM</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #1e3a8a;
+            --accent: #3b82f6;
+            --bg-light: #f8fafc;
+            --code-bg: #0f172a;
+            --border: #e2e8f0;
+            --yaml-key: #38bdf8;
+            --yaml-val: #fbbf24;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #ffffff;
+            color: #1e293b;
+            line-height: 1.6;
+            padding: 40px 20px;
+        }
+
+        .container { max-width: 1000px; margin: 0 auto; }
+
+        /* Module Header */
+        .module-header {
+            border-bottom: 2px solid var(--border);
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+        }
+        .breadcrumb { font-size: 0.85rem; color: var(--accent); font-weight: 600; text-transform: uppercase; margin-bottom: 10px; }
+        h1 { font-size: 2.5rem; color: var(--primary); font-weight: 800; }
+
+        /* Section Headings */
+        h2 { color: var(--primary); font-size: 1.5rem; margin: 40px 0 20px; display: flex; align-items: center; gap: 10px; }
+        h2::before { content: ""; width: 4px; height: 24px; background: var(--accent); display: inline-block; border-radius: 2px; }
+        
+        h3 { color: var(--primary); font-size: 1.2rem; margin: 25px 0 15px; border-left: 3px solid var(--border); padding-left: 10px; }
+
+        /* Technical Code Blocks */
+        .technical-block {
+            background: var(--code-bg);
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+        .block-label { color: #94a3b8; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; margin-bottom: 15px; display: block; border-bottom: 1px solid #1e293b; padding-bottom: 8px; }
+        
+        pre {
+            font-family: 'Fira Code', monospace;
+            font-size: 0.85rem;
+            color: #e2e8f0;
+            overflow-x: auto;
+            white-space: pre;
+        }
+        .comment { color: #64748b; font-style: italic; }
+        .key { color: var(--yaml-key); font-weight: 500; }
+        .val { color: var(--yaml-val); }
+
+        /* Info Note */
+        .note {
+            background: #eff6ff;
+            border-left: 4px solid var(--accent);
+            padding: 20px;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            margin: 20px 0;
+        }
+
+        .provisioner-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            background: var(--bg-light);
+            padding: 20px;
+            border-radius: 12px;
+            font-size: 0.9rem;
+        }
+        .prov-item { padding: 10px; border-bottom: 1px solid var(--border); }
+        .prov-item strong { color: var(--primary); display: block; margin-bottom: 4px; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header class="module-header">
+            <div class="breadcrumb">Module 03: Storage & Data Persistence</div>
+            <h1>Persistent Storage Management</h1>
+            <p style="margin-top: 10px; color: #64748b;">Comprehensive guide to Persistent Volumes, Storage Classes, and Claims.</p>
+        </header>
+
+        
+
+        <section>
+            <h2>1. Persistent Volume (PV) Configurations</h2>
+            <p>A PersistentVolume (PV) is a piece of storage in the cluster that has been provisioned by an administrator or dynamically provisioned using Storage Classes.</p>
+
+            <div class="technical-block">
+                <span class="block-label">General PV Yaml with Parameters</span>
+                <pre>
+<span class="key">apiVersion</span>: v1
+<span class="key">kind</span>: PersistentVolume
+<span class="key">metadata</span>:
+  <span class="key">name</span>: <span class="val">my-pv</span>
+  <span class="key">namespace</span>: <span class="val">my-namespace</span> <span class="comment"># Persistent volume created under namespace</span>
+  <span class="key">labels</span>:
+    <span class="key">app</span>: <span class="val">my-pv</span>
+<span class="key">spec</span>:
+  <span class="key">capacity</span>:
+    <span class="key">storage</span>: <span class="val">100Gi</span> <span class="comment"># Size of the volume</span>
+  <span class="key">storageClassName</span>: <span class="val">manual</span> <span class="comment"># Defines where the volume is created</span>
+  <span class="key">accessModes</span>:
+    - <span class="val">ReadWriteOnce</span> <span class="comment"># Access mode: single node mount</span>
+  <span class="key">volumeMode</span>: <span class="val">Filesystem</span>
+  <span class="key">persistentVolumeReclaimPolicy</span>: <span class="val">retain</span> <span class="comment"># retain, delete, or recycle (deprecated)</span>
+  <span class="key">mountOptions</span>:
+    - <span class="val">hard</span> <span class="comment"># Client retains NFS mounts indefinitely if server is unavailable</span>
+    - <span class="val">nfsvers=4.1</span> <span class="comment"># Specifies NFS protocol version</span>
+  <span class="key">nodeAffinity</span>: <span class="comment"># Constrains PV to specific nodes</span>
+    <span class="key">required</span>:
+      <span class="key">nodeSelectorTerms</span>:
+        - <span class="key">matchExpressions</span>:
+          - <span class="key">key</span>: <span class="val">kubernetes.io/hostname</span>
+            <span class="key">operator</span>: <span class="val">In</span>
+            <span class="key">values</span>: [<span class="val">node1</span>, <span class="val">node2</span>]</pre>
+            </div>
+
+            <h3>Provider Specific Examples</h3>
+
+            <div class="technical-block">
+                <span class="block-label">Cloud & Local Provider Blocks</span>
+                <pre>
+<span class="comment"># Local Storage</span>
+<span class="key">hostPath</span>:
+  <span class="key">path</span>: <span class="val">/datas</span>
+
+<span class="comment"># NFS Storage</span>
+<span class="key">nfs</span>:
+  <span class="key">path</span>: <span class="val">/data</span>
+  <span class="key">server</span>: <span class="val">nfs.example.com</span>
+
+<span class="comment"># AWS EBS</span>
+<span class="key">awsElasticBlockStore</span>:
+  <span class="key">volumeID</span>: <span class="val">vol-oabcsaddeajnnj281929989</span>
+  <span class="key">fsType</span>: <span class="val">ext4</span>
+
+<span class="comment"># Google GCE Persistent Disk</span>
+<span class="key">gcePersistentDisk</span>:
+  <span class="key">pdName</span>: <span class="val">gke-disk-1</span>
+  <span class="key">fsType</span>: <span class="val">ext4</span>
+
+<span class="comment"># Azure Disk</span>
+<span class="key">azureDisk</span>:
+  <span class="key">diskName</span>: <span class="val">mydisk</span>
+  <span class="key">diskURI</span>: <span class="val">/subscriptions/.../disks/mydisk</span>
+  <span class="key">cachingMode</span>: <span class="val">None</span>
+
+<span class="comment"># CSI (Container Storage Interface) - Generic</span>
+<span class="key">csi</span>:
+  <span class="key">driver</span>: <span class="val">mydisk.csi.k8s.io</span>
+  <span class="key">volumeHandle</span>: <span class="val">unique-volumeid</span></pre>
+            </div>
+        </section>
+
+        <section>
+            <h2>2. Storage Class (SC) & Dynamic Provisioning</h2>
+            <div class="note">
+                Storage class provides storage to PVCs based on the provisioner. If using Cloud (AWS/GCP), it integrates via APIs to create PVs automatically without manual YAML.
+            </div>
+
+            <div class="technical-block">
+                <span class="block-label">Dynamic StorageClass (AWS Example)</span>
+                <pre>
+<span class="key">apiVersion</span>: storage.k8s.io/v1
+<span class="key">kind</span>: StorageClass
+<span class="key">metadata</span>:
+  <span class="key">name</span>: <span class="val">my-storage-class</span>
+<span class="key">provisioner</span>: <span class="val">kubernetes.io/aws-ebs</span>
+<span class="key">volumeBindingMode</span>: <span class="val">WaitForFirstConsumer</span> <span class="comment"># Delay binding until Pod is created</span>
+<span class="key">allowVolumeExpansion</span>: <span class="val">true</span>
+<span class="key">reclaimPolicy</span>: <span class="val">Retain</span>
+<span class="key">parameters</span>:
+  <span class="key">type</span>: <span class="val">gp2</span> <span class="comment"># Options: gp2, io1, sc1, st1</span>
+  <span class="key">fsType</span>: <span class="val">ext4</span>
+  <span class="key">encrypted</span>: <span class="val">"true"</span>
+  <span class="key">kmsKeyId</span>: <span class="val">arn:aws:kms...</span>
+  <span class="key">iopsPerGB</span>: <span class="val">"10"</span> <span class="comment"># For io1 types</span></pre>
+            </div>
+
+            <h3>Common Provisioners & Parameters</h3>
+            <div class="provisioner-grid">
+                <div class="prov-item"><strong>kubernetes.io/aws-ebs</strong> Amazon EBS Block Storage</div>
+                <div class="prov-item"><strong>kubernetes.io/gce-pd</strong> Google Compute Engine PD</div>
+                <div class="prov-item"><strong>kubernetes.io/azure-disk</strong> Azure Managed Disk</div>
+                <div class="prov-item"><strong>kubernetes.io/no-provisioner</strong> Manual PV management (Local)</div>
+                <div class="prov-item"><strong>rancher.io/local-path</strong> Local path for minikube/local clusters</div>
+                <div class="prov-item"><strong>nfs.csi.k8s.io</strong> Dynamic NFS CSI driver</div>
+            </div>
+        </section>
+
+        <section>
+            <h2>3. Persistent Volume Claim (PVC)</h2>
+            <p>PVC claims a volume from a PV and is then injected into Pods or Deployments.</p>
+
+            <div class="technical-block">
+                <span class="block-label">PersistentVolumeClaim YAML</span>
+                <pre>
+<span class="key">apiVersion</span>: v1
+<span class="key">kind</span>: PersistentVolumeClaim
+<span class="key">metadata</span>:
+  <span class="key">name</span>: <span class="val">my-pvc</span>
+  <span class="key">namespace</span>: <span class="val">my-namespace</span>
+<span class="key">spec</span>:
+  <span class="key">storageClassName</span>: <span class="val">my-storage-class-local-nfs</span>
+  <span class="key">accessModes</span>:
+    - <span class="val">ReadWriteOnce</span>
+  <span class="key">resources</span>:
+    <span class="key">requests</span>:
+      <span class="key">storage</span>: <span class="val">5Gi</span>
+    <span class="key">limits</span>:
+      <span class="key">storage</span>: <span class="val">10Gi</span>
+  <span class="key">selector</span>:
+    <span class="key">matchLabels</span>:
+      <span class="key">app</span>: <span class="val">my-pv</span> <span class="comment"># Matches labels in Persistent Volume</span></pre>
+            </div>
+        </section>
+
+        <div class="note">
+            <strong>Key Mount Options:</strong><br>
+            • <strong>rw:</strong> Mount as read-write.<br>
+            • <strong>async:</strong> Performance optimization for writes.<br>
+            • <strong>noatime:</strong> Disables access time updates for faster file reads.
+        </div>
+    </div>
+
+</body>
+</html>

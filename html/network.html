@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kubernetes Module: Networking Ingress & Gateway API - VENKATESAN SM</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #1e3a8a;
+            --accent: #3b82f6;
+            --bg-light: #f8fafc;
+            --code-bg: #0f172a;
+            --border: #e2e8f0;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #ffffff;
+            color: #1e293b;
+            line-height: 1.6;
+            padding: 40px 20px;
+        }
+
+        .container { max-width: 900px; margin: 0 auto; }
+
+        /* Module Header */
+        .module-header {
+            border-bottom: 2px solid var(--border);
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+        }
+        .breadcrumb { font-size: 0.85rem; color: var(--accent); font-weight: 600; text-transform: uppercase; margin-bottom: 10px; }
+        h1 { font-size: 2.5rem; color: var(--primary); font-weight: 800; }
+
+        /* Tables for Annotations */
+        .annotation-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0 40px;
+            font-size: 0.9rem;
+            border: 1px solid var(--border);
+        }
+        .annotation-table th { background: var(--bg-light); color: var(--primary); padding: 12px; text-align: left; border-bottom: 2px solid var(--border); }
+        .annotation-table td { padding: 12px; border-bottom: 1px solid var(--border); vertical-align: top; }
+        .category-header { background: #f1f5f9; font-weight: 700; color: var(--primary); }
+
+        /* Code & CLI Section */
+        .technical-block {
+            background: var(--code-bg);
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+        .block-label { color: #94a3b8; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; margin-bottom: 15px; display: block; }
+        
+        pre {
+            font-family: 'Fira Code', monospace;
+            font-size: 0.85rem;
+            color: #e2e8f0;
+            overflow-x: auto;
+            white-space: pre-wrap;
+        }
+        .comment { color: #64748b; font-style: italic; }
+        .cli-cmd { color: #38bdf8; font-weight: 600; }
+        .yaml-key { color: #94a3b8; }
+        .yaml-val { color: #fbbf24; }
+
+        .note {
+            background: #eff6ff;
+            border-left: 4px solid var(--accent);
+            padding: 20px;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            margin-top: 20px;
+            margin-bottom: 30px;
+        }
+
+        h3 { color: var(--primary); margin: 30px 0 15px; font-weight: 700; border-left: 4px solid var(--accent); padding-left: 15px; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header class="module-header">
+            <div class="breadcrumb">Network Traffic Management</div>
+            <h1>Ingress & Gateway API Notes</h1>
+            <p style="margin-top: 10px; color: #64748b;">Comprehensive reference for NGINX Ingress Annotations and Gateway API configurations.</p>
+        </header>
+
+        <h3>1. NGINX Ingress Annotations Matrix</h3>
+        <table class="annotation-table">
+            <thead>
+                <tr>
+                    <th>Category</th>
+                    <th>Annotation</th>
+                    <th>Purpose</th>
+                    <th>Example</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr class="category-header"><td colspan="4">Routing & Path</td></tr>
+                <tr>
+                    <td>Routing</td>
+                    <td>nginx.ingress.kubernetes.io/rewrite-target</td>
+                    <td>Rewrites URI before forwarding to backend. Essential for path mapping.</td>
+                    <td><code>/$2</code></td>
+                </tr>
+                <tr>
+                    <td>Regex</td>
+                    <td>nginx.ingress.kubernetes.io/use-regex</td>
+                    <td>Enables regular expressions in paths (PCRE format).</td>
+                    <td><code>"true"</code></td>
+                </tr>
+                <tr>
+                    <td>Root</td>
+                    <td>nginx.ingress.kubernetes.io/app-root</td>
+                    <td>Redirects root (/) requests to a specific path.</td>
+                    <td><code>/app/home</code></td>
+                </tr>
+                <tr class="category-header"><td colspan="4">Security & TLS</td></tr>
+                <tr>
+                    <td>SSL</td>
+                    <td>nginx.ingress.kubernetes.io/force-ssl-redirect</td>
+                    <td>Forces HTTP to HTTPS even if TLS isn't configured.</td>
+                    <td><code>"true"</code></td>
+                </tr>
+                <tr>
+                    <td>Whitelist</td>
+                    <td>nginx.ingress.kubernetes.io/whitelist-source-range</td>
+                    <td>IP Whitelisting: Restricts access to specific CIDR ranges.</td>
+                    <td><code>10.0.0.0/8</code></td>
+                </tr>
+                <tr>
+                    <td>Auth</td>
+                    <td>nginx.ingress.kubernetes.io/auth-type</td>
+                    <td>Specifies authentication type (e.g., Basic Auth).</td>
+                    <td><code>basic</code></td>
+                </tr>
+                <tr class="category-header"><td colspan="4">Performance & Proxy</td></tr>
+                <tr>
+                    <td>Size</td>
+                    <td>nginx.ingress.kubernetes.io/proxy-body-size</td>
+                    <td>Sets max allowed size for client request body (file uploads).</td>
+                    <td><code>100m</code></td>
+                </tr>
+                <tr>
+                    <td>Timeout</td>
+                    <td>nginx.ingress.kubernetes.io/proxy-read-timeout</td>
+                    <td>Timeout for reading response from upstream Service.</td>
+                    <td><code>180s</code></td>
+                </tr>
+                <tr class="category-header"><td colspan="4">Canary / A/B Testing</td></tr>
+                <tr>
+                    <td>Canary</td>
+                    <td>nginx.ingress.kubernetes.io/canary</td>
+                    <td>Flags Ingress as a Canary deployment.</td>
+                    <td><code>"true"</code></td>
+                </tr>
+                <tr>
+                    <td>Weight</td>
+                    <td>nginx.ingress.kubernetes.io/canary-weight</td>
+                    <td>Percentage of traffic to route to the canary (0-100).</td>
+                    <td><code>"15"</code></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3>2. Gateway API Setup</h3>
+        <p>Installing NGINX Gateway Controller to implement Gateway API resources:</p>
+        
+        <div class="technical-block">
+            <span class="block-label">Controller Installation (CLI)</span>
+            <pre>
+<span class="comment"># Install Gateway API CRDs (Standard)</span>
+<span class="cli-cmd">kubectl kustomize "https://github.com/nginx/nginx-gateway-fabric/config/crd/gateway-api/standard?ref=v1.6.2" | kubectl apply -f -</span>
+
+<span class="comment"># Install Gateway API CRDs (Experimental)</span>
+<span class="cli-cmd">kubectl kustomize "https://github.com/nginx/nginx-gateway-fabric/config/crd/gateway-api/experimental?ref=v1.6.2" | kubectl apply -f -</span>
+
+<span class="comment"># Install via Helm</span>
+<span class="cli-cmd">helm install ngf oci://ghcr.io/nginx/charts/nginx-gateway-fabric --create-namespace -n nginx-gateway</span></pre>
+        </div>
+
+        <div class="technical-block">
+            <span class="block-label">GatewayClass Definition (YAML)</span>
+            <pre>
+<span class="yaml-key">apiVersion:</span> gateway.networking.k8s.io/v1
+<span class="yaml-key">kind:</span> GatewayClass
+<span class="yaml-key">metadata:</span>
+  <span class="yaml-key">name:</span> <span class="yaml-val">nginx</span>
+<span class="yaml-key">spec:</span>
+  <span class="yaml-key">controllerName:</span> <span class="yaml-val">nginx.org/gateway-controller</span></pre>
+        </div>
+
+        <h3>3. HTTP Routing & Advanced Logic</h3>
+
+        <div class="technical-block">
+            <span class="block-label">HTTP Gateway & Listener</span>
+            <pre>
+<span class="yaml-key">kind:</span> Gateway
+<span class="yaml-key">spec:</span>
+  <span class="yaml-key">gatewayClassName:</span> <span class="yaml-val">nginx</span>
+  <span class="yaml-key">listeners:</span>
+  <span class="yaml-key">- name:</span> http
+    <span class="yaml-key">protocol:</span> HTTP
+    <span class="yaml-key">port:</span> 80
+    <span class="yaml-key">allowedRoutes:</span>
+      <span class="yaml-key">namespaces:</span>
+        <span class="yaml-key">from:</span> All</pre>
+        </div>
+
+        <div class="technical-block">
+            <span class="block-label">Path Rewrites & Redirects</span>
+            <pre>
+<span class="comment"># Path Rewrite Example</span>
+<span class="yaml-key">filters:</span>
+<span class="yaml-key">- type:</span> URLRewrite
+  <span class="yaml-key">urlRewrite:</span>
+    <span class="yaml-key">path:</span>
+      <span class="yaml-key">replacePrefixMatch:</span> <span class="yaml-val">/new</span>
+
+<span class="comment"># HTTP to HTTPS Redirect</span>
+<span class="yaml-key">filters:</span>
+<span class="yaml-key">- type:</span> RequestRedirect
+  <span class="yaml-key">requestRedirect:</span>
+    <span class="yaml-key">scheme:</span> https</pre>
+        </div>
+
+        <div class="technical-block">
+            <span class="block-label">Traffic Splitting & Mirroring</span>
+            <pre>
+<span class="comment"># Split traffic 80/20 between services</span>
+<span class="yaml-key">backendRefs:</span>
+<span class="yaml-key">- name:</span> v1-service
+  <span class="yaml-key">weight:</span> 80
+<span class="yaml-key">- name:</span> v2-service
+  <span class="yaml-key">weight:</span> 20
+
+<span class="comment"># Mirror traffic to secondary backend</span>
+<span class="yaml-key">filters:</span>
+<span class="yaml-key">- type:</span> RequestMirror
+  <span class="yaml-key">requestMirror:</span>
+    <span class="yaml-key">backendRef:</span>
+      <span class="yaml-key">name:</span> mirror-service</pre>
+        </div>
+
+        <div class="note">
+            <strong>Pro Tip:</strong> Gateway API decouples the hierarchy. Infrastructure providers manage <strong>GatewayClasses</strong>, cluster operators manage <strong>Gateways</strong>, and developers manage <strong>HTTPRoutes</strong>.
+        </div>
+    </div>
+
+</body>
+</html>

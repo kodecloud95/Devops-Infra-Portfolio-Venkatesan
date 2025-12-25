@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GitHub Ecosystem & CI/CD - VENKATESAN SM</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #1e3a8a;
+            --accent: #3b82f6;
+            --bg-light: #f8fafc;
+            --code-bg: #0f172a;
+            --border: #e2e8f0;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #ffffff;
+            color: var(--text-main);
+            line-height: 1.6;
+            padding: 40px 20px;
+        }
+
+        .container { max-width: 1000px; margin: 0 auto; }
+
+        /* Header */
+        .module-header {
+            border-bottom: 2px solid var(--border);
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+        }
+        .breadcrumb { font-size: 0.85rem; color: var(--accent); font-weight: 600; text-transform: uppercase; margin-bottom: 10px; }
+        h1 { font-size: 2.5rem; color: var(--primary); font-weight: 800; }
+
+        h2 { font-size: 1.8rem; color: var(--primary); margin: 50px 0 20px; border-left: 5px solid var(--accent); padding-left: 15px; }
+        h3 { font-size: 1.3rem; color: var(--primary); margin: 30px 0 15px; font-weight: 600; }
+
+        /* Technical Blocks */
+        .technical-block {
+            background: var(--code-bg);
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+        .block-label { color: #94a3b8; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; margin-bottom: 15px; display: block; }
+        
+        pre {
+            font-family: 'Fira Code', monospace;
+            font-size: 0.88rem;
+            color: #e2e8f0;
+            overflow-x: auto;
+            white-space: pre;
+        }
+        .comment { color: #64748b; font-style: italic; }
+        .cli-cmd { color: #38bdf8; font-weight: 600; }
+        .yaml-key { color: #f472b6; font-weight: 700; }
+        .yaml-val { color: #fbbf24; }
+
+        /* UI Components */
+        .concept-card {
+            background: var(--bg-light);
+            padding: 25px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            margin-bottom: 30px;
+        }
+        .concept-card h4 { color: var(--primary); margin-bottom: 10px; }
+
+        .note {
+            background: #eff6ff;
+            border-left: 4px solid var(--accent);
+            padding: 20px;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            margin: 30px 0;
+        }
+
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-bottom: 40px; }
+
+        .troubleshoot-step {
+            margin-bottom: 15px;
+            padding-left: 10px;
+            border-left: 3px solid #cbd5e1;
+        }
+        .troubleshoot-step strong { color: var(--primary); display: block; margin-bottom: 5px; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header class="module-header">
+            <div class="breadcrumb">Cloud Automation</div>
+            <h1>GitHub, GIT Actions & Packages</h1>
+            <p style="margin-top: 10px; color: var(--text-muted);">Mastering GitHub-native CI/CD, Registry services, and Runner management.</p>
+        </header>
+
+        <h2>1. Fundamentals of GitHub Actions</h2>
+        <p>GitHub Actions is a CI/CD platform that allows you to automate your build, test, and deployment pipeline. Workflows are defined in YAML files within the <code>.github/workflows</code> directory.</p>
+
+        <div class="technical-block">
+            <span class="block-label">Sample Workflow (.github/workflows/main.yml)</span>
+            <pre>
+<span class="yaml-key">name:</span> <span class="yaml-val">Build and Push to GHCR</span>
+<span class="yaml-key">on:</span>
+  <span class="yaml-key">push:</span>
+    <span class="yaml-key">branches:</span> [ <span class="yaml-val">main</span> ]
+<span class="yaml-key">jobs:</span>
+  <span class="yaml-key">deploy:</span>
+    <span class="yaml-key">runs-on:</span> <span class="yaml-val">ubuntu-latest</span>
+    <span class="yaml-key">steps:</span>
+      <span class="yaml-key">- uses:</span> <span class="yaml-val">actions/checkout@v4</span>
+      <span class="yaml-key">- name:</span> <span class="yaml-val">Login to GitHub Packages</span>
+        <span class="yaml-key">run:</span> <span class="yaml-val">echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin</span></pre>
+        </div>
+
+        <h2>2. GitHub Packages (GHCR)</h2>
+        <p>GitHub Packages is a software package hosting service. The <strong>GitHub Container Registry (GHCR)</strong> is optimized for Docker images.</p>
+        <div class="grid">
+            <div class="concept-card">
+                <h4>Granular Permissions</h4>
+                <p>Unlike standard Docker Hub, GHCR allows you to tie image permissions directly to the repository or organization.</p>
+            </div>
+            <div class="concept-card">
+                <h4>Internal Traffic</h4>
+                <p>GitHub Actions downloading from GHCR is extremely fast and often falls within the free tier for public and internal repositories.</p>
+            </div>
+        </div>
+
+        <h2>3. Self-Hosted Runner Troubleshooting</h2>
+        <p>When runners fail to register or the service hangs, follow this <strong>Force Reset</strong> procedure to clean the environment.</p>
+
+        <section class="concept-card">
+            <div class="troubleshoot-step">
+                <strong>Step 1: Stop and Uninstall Runner Service</strong>
+                <div class="technical-block" style="padding: 15px; margin-top: 10px;">
+                    <pre><span class="cli-cmd">sudo systemctl stop actions.runner.*.service</span>
+<span class="cli-cmd">sudo ./svc.sh uninstall</span></pre>
+                </div>
+            </div>
+
+            <div class="troubleshoot-step">
+                <strong>Step 2: Force Reset Config Files</strong>
+                <p style="font-size: 0.85rem; margin-bottom: 5px;">Removes the existing link between the machine and GitHub.</p>
+                <div class="technical-block" style="padding: 15px;">
+                    <pre><span class="cli-cmd">rm -rf .runner .credentials .credentials_rsaparams</span></pre>
+                </div>
+            </div>
+
+            <div class="troubleshoot-step">
+                <strong>Step 3: Cleanup Systemd Artifacts</strong>
+                <div class="technical-block" style="padding: 15px;">
+                    <pre><span class="cli-cmd">sudo rm /etc/systemd/system/actions.runner.*</span>
+<span class="cli-cmd">sudo systemctl daemon-reload</span></pre>
+                </div>
+            </div>
+
+            <div class="troubleshoot-step">
+                <strong>Step 4: Fresh Registration</strong>
+                <p style="font-size: 0.85rem; margin-bottom: 5px;">Generate a fresh token from Repo Settings > Actions > Runners.</p>
+                <div class="technical-block" style="padding: 15px;">
+                    <pre><span class="cli-cmd">./config.sh --url https://github.com/USER/REPO --token &lt;FRESH_TOKEN&gt;</span></pre>
+                </div>
+            </div>
+
+            <div class="troubleshoot-step">
+                <strong>Step 5: Reinstall and Start</strong>
+                <div class="technical-block" style="padding: 15px;">
+                    <pre><span class="cli-cmd">sudo ./svc.sh install</span>
+<span class="cli-cmd">sudo ./svc.sh start</span></pre>
+                </div>
+            </div>
+        </section>
+
+        <h2>4. GitHub Actions vs. Jenkins</h2>
+        
+        <table style="width: 100%; border-collapse: collapse; margin-bottom: 40px; border: 1px solid var(--border);">
+            <thead style="background: var(--bg-light);">
+                <tr>
+                    <th style="padding: 12px; text-align: left; border: 1px solid var(--border);">Feature</th>
+                    <th style="padding: 12px; text-align: left; border: 1px solid var(--border);">GitHub Actions</th>
+                    <th style="padding: 12px; text-align: left; border: 1px solid var(--border);">Jenkins</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td style="padding: 12px; border: 1px solid var(--border);"><strong>Infrastructure</strong></td>
+                    <td style="padding: 12px; border: 1px solid var(--border);">GitHub-hosted or Self-hosted</td>
+                    <td style="padding: 12px; border: 1px solid var(--border);">Self-hosted (Server required)</td>
+                </tr>
+                <tr>
+                    <td style="padding: 12px; border: 1px solid var(--border);"><strong>Configuration</strong></td>
+                    <td style="padding: 12px; border: 1px solid var(--border);">YAML (native to repo)</td>
+                    <td style="padding: 12px; border: 1px solid var(--border);">Groovy (Jenkinsfile)</td>
+                </tr>
+                <tr>
+                    <td style="padding: 12px; border: 1px solid var(--border);"><strong>Marketplace</strong></td>
+                    <td style="padding: 12px; border: 1px solid var(--border);">Extensive ready-made Actions</td>
+                    <td style="padding: 12px; border: 1px solid var(--border);">Large plugin ecosystem</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h2>5. Best Practices: Hardening Workflows</h2>
+        <div class="grid">
+            <div class="concept-card">
+                <h4>Least Privilege</h4>
+                <p>Use <code>permissions: contents: read</code> at the top of your workflow to prevent accidental token misuse.</p>
+            </div>
+            <div class="concept-card">
+                <h4>Action Versioning</h4>
+                <p>Pin actions to a specific commit SHA (e.g., <code>actions/checkout@8ade...</code>) instead of <code>@v4</code> to avoid Supply Chain attacks.</p>
+            </div>
+            <div class="concept-card">
+                <h4>Secret Scanning</h4>
+                <p>Enable GitHub Secret Scanning to automatically block pushes that contain API keys or passwords.</p>
+            </div>
+        </div>
+
+        <div class="note">
+            <strong>Pro Tip:</strong> When using self-hosted runners for public repositories, never use <code>pull_request_target</code> triggers with checkout actions, as it allows external contributors to run malicious code on your private infrastructure.
+        </div>
+    </div>
+
+</body>
+</html>

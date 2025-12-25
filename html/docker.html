@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Docker Mastery - VENKATESAN SM</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #1e3a8a;
+            --accent: #3b82f6;
+            --bg-light: #f8fafc;
+            --code-bg: #0f172a;
+            --border: #e2e8f0;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #ffffff;
+            color: var(--text-main);
+            line-height: 1.6;
+            padding: 40px 20px;
+        }
+
+        .container { max-width: 1000px; margin: 0 auto; }
+
+        /* Header */
+        .module-header {
+            border-bottom: 2px solid var(--border);
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+        }
+        .breadcrumb { font-size: 0.85rem; color: var(--accent); font-weight: 600; text-transform: uppercase; margin-bottom: 10px; }
+        h1 { font-size: 2.5rem; color: var(--primary); font-weight: 800; }
+
+        h2 { font-size: 1.8rem; color: var(--primary); margin: 50px 0 20px; border-left: 5px solid var(--accent); padding-left: 15px; }
+        h3 { font-size: 1.3rem; color: var(--primary); margin: 30px 0 15px; font-weight: 600; }
+
+        /* Tables */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0 40px;
+            font-size: 0.9rem;
+            border: 1px solid var(--border);
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+        }
+        .data-table th { background: var(--bg-light); color: var(--primary); padding: 15px; text-align: left; border-bottom: 2px solid var(--border); }
+        .data-table td { padding: 12px 15px; border-bottom: 1px solid var(--border); vertical-align: top; }
+        .data-table tr:nth-child(even) { background: #fafafa; }
+        .data-table tr:hover { background: #f1f5f9; }
+
+        /* Technical Blocks */
+        .technical-block {
+            background: var(--code-bg);
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+        .block-label { color: #94a3b8; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; margin-bottom: 15px; display: block; }
+        
+        pre {
+            font-family: 'Fira Code', monospace;
+            font-size: 0.9rem;
+            color: #e2e8f0;
+            overflow-x: auto;
+            white-space: pre;
+        }
+        .comment { color: #64748b; font-style: italic; }
+        .keyword { color: #38bdf8; font-weight: 700; }
+        .string { color: #fbbf24; }
+        .var { color: #f472b6; }
+
+        /* Concepts */
+        .concept-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+        .concept-card {
+            background: var(--bg-light);
+            padding: 25px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+        }
+        .concept-card h4 { color: var(--primary); margin-bottom: 10px; }
+        .concept-card p { font-size: 0.9rem; color: var(--text-muted); }
+
+        .note {
+            background: #eff6ff;
+            border-left: 4px solid var(--accent);
+            padding: 20px;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            margin: 30px 0;
+        }
+
+        ul.list-detailed { margin-left: 20px; margin-bottom: 20px; }
+        ul.list-detailed li { margin-bottom: 10px; color: var(--text-main); }
+        ul.list-detailed b { color: var(--primary); }
+
+        .tag { background: #dbeafe; color: #1e40af; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 700; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header class="module-header">
+            <div class="breadcrumb"></div>
+            <h1>Dockerfile Architecture & Image Management</h1>
+            <p style="margin-top: 10px; color: var(--text-muted);">A comprehensive guide to creating portable, efficient, and production-grade container images.</p>
+        </header>
+
+        <section class="concept-card">
+            <h4>What is a Dockerfile?</h4>
+            <p>A Dockerfile is a plain text file with line-by-line instructions telling Docker how to build a portable image of your app or environment. Each instruction creates a <b>layer</b> in the image (such as installing software, copying files, setting environment variables).</p>
+        </section>
+
+        <h2>1. Core Dockerfile Instructions</h2>
+        <table class="data-table">
+            <thead>
+                <tr><th>Command</th><th>Detailed Purpose</th></tr>
+            </thead>
+            <tbody>
+                <tr><td><span class="keyword">FROM</span></td><td>Sets the base image (e.g., <code>FROM ubuntu:22.04</code>, <code>FROM python:3.11-slim</code>)</td></tr>
+                <tr><td><span class="keyword">LABEL</span></td><td>Adds metadata like maintainer, version, or description for traceability.</td></tr>
+                <tr><td><span class="keyword">RUN</span></td><td>Executes commands to install packages, build code, or create directories.</td></tr>
+                <tr><td><span class="keyword">COPY / ADD</span></td><td>Moves files from host. <code>ADD</code> supports URLs and tar extraction.</td></tr>
+                <tr><td><span class="keyword">WORKDIR</span></td><td>Sets the default directory where all subsequent commands will run.</td></tr>
+                <tr><td><span class="keyword">ENV</span></td><td>Sets permanent environment variables available during build and runtime.</td></tr>
+                <tr><td><span class="keyword">EXPOSE</span></td><td>Documents which ports are intended to be mapped for the application.</td></tr>
+                <tr><td><span class="keyword">USER</span></td><td>Switches execution to a non-root user for enhanced security.</td></tr>
+                <tr><td><span class="keyword">VOLUME</span></td><td>Declares a mount point to persist data outside the container lifecycle.</td></tr>
+                <tr><td><span class="keyword">CMD</span></td><td>Specifies the default command to run when the container starts.</td></tr>
+                <tr><td><span class="keyword">ENTRYPOINT</span></td><td>Sets the container’s primary executable (cannot be easily overridden).</td></tr>
+                <tr><td><span class="keyword">ARG</span></td><td>Defines variables that users can pass at build-time using <code>--build-arg</code>.</td></tr>
+                <tr><td><span class="keyword">HEALTHCHECK</span></td><td>Defines a command to test the container’s running status (Liveness).</td></tr>
+            </tbody>
+        </table>
+
+        <h2>2. Detailed Full-Stack Case Study</h2>
+        <p>This example demonstrates building a production-ready image for a Python (Flask) app, Node/React frontend, and Nginx for static file serving.</p>
+
+        <div class="technical-block">
+            <span class="block-label">Multi-Service Dockerfile</span>
+            <pre>
+<span class="comment"># 1. Base OS</span>
+<span class="keyword">FROM</span> ubuntu:22.04
+
+<span class="comment"># 2. Metadata Labels</span>
+<span class="keyword">LABEL</span> maintainer="Your Name &lt;youremail@example.com&gt;"
+<span class="keyword">LABEL</span> version="1.0"
+
+<span class="comment"># 3. Variables</span>
+<span class="keyword">ARG</span> TIMEZONE=UTC
+<span class="keyword">ENV</span> <span class="var">PYTHONUNBUFFERED</span>=1 <span class="var">APP_HOME</span>=/app <span class="var">TZ</span>=$TIMEZONE
+
+<span class="comment"># 4. Systems Layer: Install Python, Node, Nginx</span>
+<span class="keyword">RUN</span> apt-get update && \
+    apt-get install -y python3 python3-pip python3-venv nodejs npm nginx tzdata && \
+    ln -fs /usr/share/zoneinfo/$TZ /etc/localtime && \
+    dpkg-reconfigure -f noninteractive tzdata && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
+
+<span class="keyword">WORKDIR</span> <span class="var">$APP_HOME</span>
+
+<span class="comment"># 5. Backend Layer</span>
+<span class="keyword">COPY</span> requirements.txt .
+<span class="keyword">RUN</span> python3 -m venv venv && \
+    . venv/bin/activate && \
+    pip install --no-cache-dir -r requirements.txt
+
+<span class="comment"># 6. Frontend Layer</span>
+<span class="keyword">COPY</span> frontend/package*.json ./frontend/
+<span class="keyword">RUN</span> cd frontend && npm install && npm run build
+
+<span class="keyword">COPY</span> . <span class="var">$APP_HOME</span>
+
+<span class="comment"># 7. Static Assets & Proxy</span>
+<span class="keyword">RUN</span> rm -rf /var/www/html && \
+    ln -s <span class="var">$APP_HOME</span>/frontend/build /var/www/html
+<span class="keyword">COPY</span> nginx.conf /etc/nginx/sites-available/default
+
+<span class="keyword">EXPOSE</span> 5000 80
+
+<span class="comment"># 8. Service Orchestration</span>
+<span class="keyword">RUN</span> pip install supervisor
+<span class="keyword">COPY</span> supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+
+<span class="keyword">HEALTHCHECK</span> --interval=30s --timeout=10s --start-period=5s \
+  <span class="keyword">CMD</span> curl -f http://localhost:5000/health || exit 1
+
+<span class="keyword">CMD</span> ["/usr/bin/supervisord"]</pre>
+        </div>
+
+        <h3>Deep Dive: Step-by-Step Logic</h3>
+        <ul class="list-detailed">
+            <li><b>FROM & LABEL:</b> Establishes the OS foundation and metadata for traceability.</li>
+            <li><b>ARG & ENV:</b> Provides flexibility. <code>ARG</code> is for build-time; <code>ENV</code> persists at runtime.</li>
+            <li><b>Layer Optimization (RUN):</b> Chaining commands (<code>&& \</code>) reduces the number of image layers and final image size.</li>
+            <li><b>WORKDIR:</b> Ensures all following actions (COPY, RUN) occur in <code>/app</code>, preventing file clutter.</li>
+            <li><b>Virtual Environments (venv):</b> Isolates Python dependencies, ensuring system-level Python remains untouched.</li>
+            <li><b>Supervisor:</b> A key best practice for running multiple processes (Flask + Nginx) reliably inside a single container.</li>
+            <li><b>Healthcheck:</b> Critical for Kubernetes and Docker Swarm to know when to restart a hung container.</li>
+        </ul>
+
+        <h2>3. Base Image Comparison Matrix</h2>
+        
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Image</th>
+                    <th>Typical Use Case</th>
+                    <th>Advantages</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td><span class="tag">nginx</span></td><td>Static sites, reverse proxies</td><td>High performance, ready-to-use config.</td></tr>
+                <tr><td><span class="tag">alpine</span></td><td>Minimalist microservices</td><td>Smallest footprint (~5MB), highly secure.</td></tr>
+                <tr><td><span class="tag">ubuntu</span></td><td>Complex apps, heavy dependencies</td><td>Broadest package support, easy troubleshooting.</td></tr>
+                <tr><td><span class="tag">node / python</span></td><td>Standard language backends</td><td>Pre-configured runtimes for JS/Python.</td></tr>
+                <tr><td><span class="tag">golang</span></td><td>Go binaries / APIs</td><td>Used for building static, fast binaries.</td></tr>
+                <tr><td><span class="tag">openjdk / tomcat</span></td><td>Java / Spring Boot / JSP</td><td>Enterprise standard for Java applications.</td></tr>
+                <tr><td><span class="tag">mysql / postgres</span></td><td>Database services</td><td>Official images with volume/env logic built-in.</td></tr>
+            </tbody>
+        </table>
+
+        <h2>4. Application Deployment Guide</h2>
+        <p>Reference guide for code placement and execution across different technology stacks.</p>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Stack</th>
+                    <th>Code Destination (Inside Container)</th>
+                    <th>Execution Pattern</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><b>Nginx</b></td>
+                    <td><code>/usr/share/nginx/html</code></td>
+                    <td>Automatic. Just <code>COPY</code> files to destination.</td>
+                </tr>
+                <tr>
+                    <td><b>Apache (httpd)</b></td>
+                    <td><code>/usr/local/apache2/htdocs/</code></td>
+                    <td>Automatic static file serving.</td>
+                </tr>
+                <tr>
+                    <td><b>Python</b></td>
+                    <td><code>/app</code> or <code>/usr/src/app</code></td>
+                    <td><code>CMD ["python", "main.py"]</code></td>
+                </tr>
+                <tr>
+                    <td><b>Node.js</b></td>
+                    <td><code>/app</code></td>
+                    <td><code>RUN npm install</code> then <code>CMD ["node", "app.js"]</code></td>
+                </tr>
+                <tr>
+                    <td><b>Java (Jar)</b></td>
+                    <td><code>/app</code></td>
+                    <td><code>CMD ["java", "-jar", "app.jar"]</code></td>
+                </tr>
+                <tr>
+                    <td><b>Tomcat</b></td>
+                    <td><code>/usr/local/tomcat/webapps/</code></td>
+                    <td>Automatic deployment of <code>.war</code> files.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h2>5. [Added] Advanced Docker Best Practices</h2>
+        <div class="concept-grid">
+            <div class="concept-card">
+                <h4>Multi-Stage Builds</h4>
+                <p>Use one image for building (with compilers/npm) and a second, smaller image for running. This can reduce image size by up to 90%.</p>
+            </div>
+            <div class="concept-card">
+                <h4>Layer Caching</h4>
+                <p>Order instructions from least frequently changed to most frequently changed. Copy <code>package.json</code> <b>before</b> copying source code to avoid re-running <code>npm install</code> unnecessarily.</p>
+            </div>
+            <div class="concept-card">
+                <h4>Security: Non-Root User</h4>
+                <p>By default, containers run as root. Always add a <code>USER appuser</code> instruction to limit potential damage from an exploit.</p>
+            </div>
+            <div class="concept-card">
+                <h4>.dockerignore</h4>
+                <p>Always include a <code>.dockerignore</code> file to exclude <code>node_modules</code>, <code>.git</code>, and local logs from being sent to the Docker daemon.</p>
+            </div>
+        </div>
+
+        <div class="note">
+            <strong>Pro Tip:</strong> Use <strong>Multi-Stage builds</strong> for compiled languages like Go or Java. Build the binary in a <code>golang:alpine</code> image and then <code>COPY</code> only the resulting binary into a final <code>scratch</code> or <code>alpine</code> image for the smallest possible production footprint.
+        </div>
+    </div>
+
+</body>
+</html>

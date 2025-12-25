@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kubernetes Guide - Production Architecture</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #1e3a8a;
+            --accent: #3b82f6;
+            --text-main: #1f2937;
+            --text-muted: #6b7280;
+            --bg-light: #f8fafc;
+            --border: #e2e8f0;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #ffffff;
+            color: var(--text-main);
+            line-height: 1.6;
+        }
+
+        .container { max-width: 1100px; margin: 0 auto; padding: 60px 20px; }
+
+        /* Header Section */
+        header { text-align: center; margin-bottom: 80px; }
+        .k8s-logo-placeholder { 
+            color: var(--accent); 
+            font-weight: 800; 
+            font-size: 1.2rem; 
+            letter-spacing: 2px; 
+            text-transform: uppercase;
+            margin-bottom: 1rem;
+            display: block;
+        }
+        h1 { font-size: 3rem; color: var(--primary); margin-bottom: 20px; font-weight: 800; }
+        .hero-text { font-size: 1.2rem; color: var(--text-muted); max-width: 800px; margin: 0 auto; }
+
+        /* Context Banner */
+        .context-banner {
+            background: var(--bg-light);
+            border-left: 4px solid var(--primary);
+            padding: 30px;
+            border-radius: 8px;
+            margin-bottom: 60px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        }
+        .context-banner h2 { font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px; color: var(--primary); margin-bottom: 10px; }
+
+        /* Module Grid */
+        .module-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 25px;
+            margin-bottom: 80px;
+        }
+
+        .module-card {
+            background: #fff;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 30px;
+            transition: all 0.3s ease;
+        }
+
+        .module-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--accent);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+
+        .module-card h3 { 
+            font-size: 1.25rem; 
+            color: var(--primary); 
+            margin-bottom: 15px; 
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .module-card ul { list-style: none; }
+        .module-card li { 
+            font-size: 0.9rem; 
+            color: var(--text-muted); 
+            margin-bottom: 8px; 
+            padding-left: 18px; 
+            position: relative;
+        }
+        .module-card li::before {
+            content: "→";
+            position: absolute;
+            left: 0;
+            color: var(--accent);
+            font-weight: bold;
+        }
+
+        /* Summary Section */
+        .summary-section {
+            background: var(--primary);
+            color: #fff;
+            padding: 60px;
+            border-radius: 20px;
+        }
+        .summary-section h2 { font-size: 2rem; margin-bottom: 30px; }
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+        }
+        .summary-item b { color: var(--accent); display: block; margin-bottom: 5px; font-size: 1.1rem; }
+        .summary-item p { font-size: 0.95rem; opacity: 0.9; }
+
+        @media (max-width: 768px) {
+            h1 { font-size: 2.2rem; }
+            .summary-section { padding: 30px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <span class="k8s-logo-placeholder">Orchestration Mastery</span>
+            <h1>Kubernetes Production Guide</h1>
+            <p class="hero-text">A systematic breakdown of the components required to build, secure, and scale high-availability containerized ecosystems.</p>
+        </header>
+
+        <div class="context-banner">
+            <h2>Context</h2>
+            <p>This guide provides practical Helm templates and deployment YAMLs for each category, culminating in a combined solution demonstrating a real-world, production-ready application architecture.</p>
+        </div>
+
+        <div class="module-grid">
+            <div class="module-card">
+                <h3>01. Workload Control</h3>
+                <ul>
+                    <li>Namespace Isolation</li>
+                    <li>ReplicaSet & Init Containers</li>
+                    <li>StatefulSet & DaemonSet</li>
+                    <li>Batch Jobs & CronJobs</li>
+                    <li>PriorityClasses</li>
+                </ul>
+            </div>
+
+            <div class="module-card">
+                <h3>02. Scheduling & Placement</h3>
+                <ul>
+                    <li>NodeSelectors</li>
+                    <li>Node Affinity / Anti-Affinity</li>
+                    <li>Taints & Tolerations</li>
+                </ul>
+            </div>
+
+            <div class="module-card">
+                <h3>03. Compute & Scaling</h3>
+                <ul>
+                    <li>ResourceQuotas & LimitRanges</li>
+                    <li>Horizontal Pod Autoscaling (HPA)</li>
+                    <li>Vertical Pod Autoscaling (VPA)</li>
+                    <li>Environment Variables</li>
+                </ul>
+            </div>
+
+            <div class="module-card">
+                <h3>04. Storage Architecture</h3>
+                <ul>
+                    <li>Storage Classes (Local/Network)</li>
+                    <li>Persistent Volumes (PV) & Claims (PVC)</li>
+                    <li>HostPath, EmptyDir & Projected</li>
+                </ul>
+            </div>
+
+            <div class="module-card">
+                <h3>05. Network & Discovery</h3>
+                <ul>
+                    <li>ClusterIP, NodePort, LoadBalancer</li>
+                    <li>Ingress Controllers & Resources</li>
+                    <li>Gateway API & Endpoint Slices</li>
+                    <li>Network Policies</li>
+                </ul>
+            </div>
+
+            <div class="module-card">
+                <h3>06. Security & Governance</h3>
+                <ul>
+                    <li>RBAC (Roles & ClusterRoles)</li>
+                    <li>Service Accounts & Token Projection</li>
+                    <li>Security Contexts</li>
+                    <li>Admission Webhooks</li>
+                    <li>CRDs</li>
+                </ul>
+            </div>
+        </div>
+
+        
+
+        <section class="summary-section">
+            <h2>Executive Summary</h2>
+            <div class="summary-grid">
+                <div class="summary-item">
+                    <b>Isolation</b>
+                    <p>Namespaces enable multi-tenancy and resource partitioning across teams.</p>
+                </div>
+                <div class="summary-item">
+                    <b>Resilience</b>
+                    <p>Workload controllers manage lifecycles, ensuring scaling and rolling updates.</p>
+                </div>
+                <div class="summary-item">
+                    <b>Efficiency</b>
+                    <p>Compute limits and autoscalers maintain performance while controlling costs.</p>
+                </div>
+                <div class="summary-item">
+                    <b>Connectivity</b>
+                    <p>Advanced networking ensures secure and observable communication.</p>
+                </div>
+            </div>
+        </section>
+    </div>
+
+</body>
+</html>

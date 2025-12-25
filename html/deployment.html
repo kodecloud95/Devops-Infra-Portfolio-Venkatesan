@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>K8s Workload Configurations - VENKATESAN SM</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #1e3a8a;
+            --secondary: #2c3e50;
+            --bg-light: #f8fafc;
+            --code-bg: #1e293b;
+            --border: #e2e8f0;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: #ffffff;
+            color: var(--secondary);
+            line-height: 1.6;
+            padding: 40px 20px;
+        }
+
+        .container { max-width: 1200px; margin: 0 auto; }
+
+        header { border-bottom: 2px solid var(--border); margin-bottom: 50px; padding-bottom: 20px; }
+        header h1 { color: var(--primary); font-size: 2.5rem; text-transform: uppercase; }
+
+        /* DOCUMENTATION LAYOUT */
+        .doc-section { margin-bottom: 80px; }
+        .section-header { 
+            display: flex; 
+            align-items: center; 
+            gap: 15px; 
+            margin-bottom: 25px; 
+            background: var(--bg-light);
+            padding: 15px 25px;
+            border-radius: 8px;
+            border-left: 5px solid var(--primary);
+        }
+        .section-header h2 { font-size: 1.8rem; color: var(--primary); }
+
+        .grid { display: grid; grid-template-columns: 1fr 1.2fr; gap: 40px; align-items: start; }
+
+        .content p { margin-bottom: 15px; color: #475569; }
+        .feature-tag { 
+            display: inline-block; 
+            background: #dbeafe; 
+            color: var(--primary); 
+            padding: 2px 12px; 
+            border-radius: 20px; 
+            font-size: 0.8rem; 
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        /* CODE BLOCK STYLING */
+        pre {
+            background: var(--code-bg);
+            color: #f8f8f2;
+            padding: 25px;
+            border-radius: 12px;
+            overflow-x: auto;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.85rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            position: relative;
+        }
+        pre::before {
+            content: "YAML";
+            position: absolute;
+            top: 0; right: 20px;
+            background: var(--primary);
+            padding: 2px 10px;
+            font-size: 0.7rem;
+            border-bottom-left-radius: 5px;
+            border-bottom-right-radius: 5px;
+        }
+
+        /* TABLE STYLING */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+        th { background: var(--primary); color: white; text-align: left; padding: 15px; font-weight: 600; }
+        td { padding: 15px; border-bottom: 1px solid var(--border); font-size: 0.9rem; }
+        tr:nth-child(even) { background: var(--bg-light); }
+
+        @media (max-width: 992px) {
+            .grid { grid-template-columns: 1fr; }
+            header h1 { font-size: 1.8rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>Workload Controllers & Scheduling</h1>
+            <p>Production-ready templates for Deployments, StatefulSets, DaemonSets, and Jobs.</p>
+        </header>
+
+        <section class="doc-section">
+            <div class="section-header">
+                <h2>01. Generic Deployment</h2>
+            </div>
+            <div class="grid">
+                <div class="content">
+                    <span class="feature-tag">NodeSelector</span>
+                    <span class="feature-tag">PriorityClass</span>
+                    <p>Standard workload used for stateless applications. This template includes a <b>PriorityClass</b> to ensure critical pods are scheduled first and a <b>NodeSelector</b> to pin the application to high-performance SSD nodes.</p>
+                    <p><b>Note:</b> InitContainers are defined to handle pre-deployment tasks like database readiness checks before the main application starts.</p>
+                </div>
+                <pre>
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  name: my-priority-class
+value: 1000000
+globalDefault: false
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: my-deployment
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: my-app
+  template:
+    spec:
+      priorityClassName: my-priority-class
+      nodeSelector:
+        diskType: ssd
+      initContainers:
+      - name: init-container
+        image: nginx
+      containers:
+      - name: main-container
+        image: ubuntu
+        volumeMounts:
+        - name: my-volume
+          mountPath: /var/html
+      volumes:
+      - name: my-volume
+        hostPath:
+          path: /data</pre>
+            </div>
+        </section>
+
+        <section class="doc-section">
+            <div class="section-header">
+                <h2>02. StatefulSet</h2>
+            </div>
+            <div class="grid">
+                <div class="content">
+                    <span class="feature-tag">Headless Service</span>
+                    <span class="feature-tag">PVC Template</span>
+                    <p>Used for stateful applications like Databases. This configuration uses a <b>Headless Service</b> (ClusterIP: None) to give each pod a unique DNS identity (e.g., pod-0.svc).</p>
+                    <p>Features <b>NodeAffinity</b> (Hard/Soft rules) to ensure pods are distributed across specific availability zones or hardware types.</p>
+                </div>
+                <pre>
+apiVersion: v1
+kind: Service
+metadata:
+  name: my-headless-service
+spec:
+  clusterIP: None
+  ports:
+  - port: 80
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: stateful-set
+spec:
+  serviceName: my-headless-service
+  replicas: 3
+  template:
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: my-affinity
+                operator: In
+                values: ["node1"]
+  volumeClaimTemplates:
+  - metadata:
+      name: my-volume-1
+    spec:
+      storageClassName: disk-ssd
+      accessModes: ["ReadWriteOnce"]
+      resources:
+        requests:
+          storage: 10Gi</pre>
+            </div>
+        </section>
+
+        <section class="doc-section">
+            <div class="section-header">
+                <h2>03. DaemonSet</h2>
+            </div>
+            <div class="grid">
+                <div class="content">
+                    <span class="feature-tag">Per-Node Pod</span>
+                    <span class="feature-tag">Monitoring</span>
+                    <p>Ensures a copy of the pod runs on all (or selected) nodes. Ideal for log collectors (Fluentd) or monitoring agents (Prometheus Exporters).</p>
+                    <p><b>Pro-tip:</b> Replicas are not supported here, as the scheduler manages the count based on the number of nodes in the cluster.</p>
+                </div>
+                <pre>
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: daemon-set-deployment
+spec:
+  selector:
+    matchLabels:
+      role: daemonset
+  template:
+    metadata:
+      labels:
+        role: daemonset
+    spec:
+      containers:
+      - name: sidecar-agent
+        image: ubuntu
+        volumeMounts:
+        - name: log-vol
+          mountPath: /var/log</pre>
+            </div>
+        </section>
+
+        <section class="doc-section">
+            <div class="section-header">
+                <h2>04. Batch & Scheduled Jobs</h2>
+            </div>
+            <div class="grid">
+                <div class="content">
+                    <span class="feature-tag">Run-to-completion</span>
+                    <span class="feature-tag">Scheduling</span>
+                    <p><b>Jobs:</b> Used for one-off tasks. Set <code>completions</code> and <code>parallelism</code> to control execution flow.</p>
+                    <p><b>CronJobs:</b> Automated tasks using standard Linux crontab syntax. Includes <code>tolerations</code> to allow execution on tainted master nodes.</p>
+                </div>
+                <pre>
+apiVersion: batch/v1
+kind: CronJob
+spec:
+  schedule: "*/30 * * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          restartPolicy: Never
+          tolerations:
+          - key: "my-key"
+            operator: "Equal"
+            value: "my-value"
+            effect: "NoSchedule"
+          containers:
+          - name: worker
+            image: ubuntu
+            command: ["echo", "Task Done"]</pre>
+            </div>
+        </section>
+
+        <section class="doc-section">
+            <div class="section-header">
+                <h2>Cron Schedule Reference</h2>
+            </div>
+            
+            <table>
+                <thead>
+                    <tr>
+                        <th>Field</th>
+                        <th>Position</th>
+                        <th>Allowed Values</th>
+                        <th>Example</th>
+                        <th>Meaning of *</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Minute</td>
+                        <td>1st</td>
+                        <td>0-59</td>
+                        <td>*</td>
+                        <td>Every minute</td>
+                    </tr>
+                    <tr>
+                        <td>Hour</td>
+                        <td>2nd</td>
+                        <td>0-23</td>
+                        <td>*</td>
+                        <td>Every hour</td>
+                    </tr>
+                    <tr>
+                        <td>Day of Month</td>
+                        <td>3rd</td>
+                        <td>1-31</td>
+                        <td>*</td>
+                        <td>Every day</td>
+                    </tr>
+                    <tr>
+                        <td>Month</td>
+                        <td>4th</td>
+                        <td>1-12</td>
+                        <td>*</td>
+                        <td>Every month</td>
+                    </tr>
+                    <tr>
+                        <td>Day of Week</td>
+                        <td>5th</td>
+                        <td>0-6</td>
+                        <td>*</td>
+                        <td>Every day (0=Sun)</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+    </div>
+
+</body>
+</html>
