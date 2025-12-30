@@ -15,7 +15,7 @@ pipeline {
         }
         stage('Push Docker Image') {
             steps {
-                withcredentials([usernamePassword(credentialsId: 'GIT_PACKAGE', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
+                withCredentials([usernamePassword(credentialsId: 'GIT_PACKAGE', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
                   script {
                     sh "echo $PASSWORD | docker login ${registryUrl} -u $USERNAME --password-stdin"
                     sh "docker push ${registryUrl}${dockerImage}"
