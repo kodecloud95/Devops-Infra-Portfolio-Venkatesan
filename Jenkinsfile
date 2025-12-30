@@ -18,6 +18,7 @@ pipeline {
                 withCredentials([usernamePassword(credentialsId: 'GIT_PACKAGE', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
                   script {
                     sh 'echo ${PASSWORD} | docker login ghcr.io -u ${USERNAME} --password-stdin'
+                    sh "docker tag ${dockerImage} ${registryUrl}${dockerImage}"
                     sh "docker push ${registryUrl}${dockerImage}"
                     }
                 }
