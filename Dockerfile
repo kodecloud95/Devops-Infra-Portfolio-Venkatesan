@@ -1,9 +1,8 @@
-# This dockerfile creates an NGINX web server image with kubectl installed
-LABEL maintainer="kodecloud95@gmail.com"
+FROM nginx:alpine
+
+# This dockerfile creates an NGINX web server image
 LABEL description="NGINX web server"
 LABEL version="1.0.0"
-
-FROM nginx:alpine
 
 # Copy your website
 COPY ./html /usr/share/nginx/html/
